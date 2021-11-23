@@ -6,14 +6,17 @@ import csv
 from tqdm import tqdm
 
 import settings
-from datasets import get_dataset_from_file, get_data_of_days, convert_to_one_hot
+from datasets_adls import get_dataset_from_file, get_data_of_days, convert_to_one_hot
 from lstm_model import LSTM_train_test
 from utils import build_dataset, get_confusion_matrix
 from settings import NUMBER_OF_ACTIVITIES, HISTORY_SIZE, TOTAL_NUM_OF_FEATURES, \
-    CONFUSION_MATRIX_DIR, LIST_OF_MAPPED_2_ACTIVITIES, LIST_OF_DAYS_OF_UPDATES, AVAILABLE_CLIENTS, CLIENT_START_DAY
+    CONFUSION_MATRIX_DIR, LIST_OF_MAPPED_2_ACTIVITIES, LIST_OF_DAYS_OF_UPDATES_NEW_DATA, AVAILABLE_CLIENTS_NEW_DATA, \
+    CLIENT_START_DAY_NEW_DATA
 
 np.random.seed(0)
 tf.random.set_seed(0)
+
+
 def create_centralized_train_dataset(dataset_nums, num_days):
     all_data = np.empty((0, HISTORY_SIZE, TOTAL_NUM_OF_FEATURES))
     all_labels = np.empty((0, NUMBER_OF_ACTIVITIES))
@@ -101,16 +104,16 @@ def run_local_only():
     logdir = "./logs_local_days_topk_24/"
 
     # num_clients = 9
-    num_clients = 30
+    num_clients = 6
     # num_day_experiments = 30
-    num_day_experiments = 32
+    num_day_experiments = 40
     losses = np.zeros((num_day_experiments, num_clients))
     accuracies = np.zeros((num_day_experiments, num_clients))
     my_accuracies = np.zeros((num_day_experiments, num_clients))
-    first_test_home = 101
+    first_test_home = 1
 
-    for num_days in range(2, 34):
-        for client_id in range(first_test_home, 131):
+    for num_days in range(3, 43):
+        for client_id in range(first_test_home, 7):
             lstm = LSTM_train_test(output_size=settings.NUMBER_OF_ACTIVITIES)
             lstm.compile()
             try:
@@ -156,6 +159,8 @@ def run_local_only():
             )
 
             loss, cat_accuracy = lstm.evaluate(data_test, labels_test)
+            # loss, cat_accuracy = lstm.evaluate(data_train, labels_train)
+
             print("Evaluation on client " + str(client_id))
             predicted = lstm.predict(data_test)
             print('results on some data points\n\n')
@@ -163,9 +168,9 @@ def run_local_only():
             print('\n\n')
             my_accuracy = get_window_accuracy(predicted, labels_test)
 
-            losses[num_days - 2, client_id - first_test_home] = loss
-            accuracies[num_days - 2, client_id - first_test_home] = cat_accuracy
-            my_accuracies[num_days - 2, client_id - first_test_home] = my_accuracy
+            losses[num_days - 3, client_id - first_test_home] = loss
+            accuracies[num_days - 3, client_id - first_test_home] = cat_accuracy
+            my_accuracies[num_days - 3, client_id - first_test_home] = my_accuracy
 
             # with evaluate_summary_writer.as_default():
             #     tf.summary.scalar('evaluate loss', loss, step=it)
@@ -179,10 +184,10 @@ def run_local_only():
             #     train_summary_writer.flush()
 
     # for i in range(num_clients):
-    os.makedirs('./results/local_30_home_results_3/', exist_ok=True)
-    np.savetxt("./results/local_30_home_results_3/eva_losses.txt", losses, delimiter=',')
-    np.savetxt("./results/local_30_home_results_3/eva_accuracies.txt", accuracies, delimiter=',')
-    np.savetxt("./results/local_30_home_results_3/eva_my_accuracies.txt", my_accuracies, delimiter=',')
+    os.makedirs('./results/local_6_home_results_lre4_weighted_16/', exist_ok=True)
+    np.savetxt("./results/local_6_home_results_lre4_weighted_16/eva_losses.txt", losses, delimiter=',')
+    np.savetxt("./results/local_6_home_results_lre4_weighted_16/eva_accuracies.txt", accuracies, delimiter=',')
+    np.savetxt("./results/local_6_home_results_lre4_weighted_16/eva_my_accuracies.txt", my_accuracies, delimiter=',')
 
     return lstm
 
@@ -191,14 +196,14 @@ def run_not_local():
     logdir = "./logs_not_local_2/"
 
     # num_clients = 9
-    num_clients = 36
+    num_clients = 6
     # num_day_experiments = 30
-    num_day_experiments = 67
+    num_day_experiments = 40
     losses = np.zeros((num_day_experiments, num_clients))
     accuracies = np.zeros((num_day_experiments, num_clients))
     my_accuracies = np.zeros((num_day_experiments, num_clients))
-    first_test_home = 101
-    data_keys = 2
+    first_test_home = 1
+    data_keys = 1
 
     np.random.seed(0)
     tf.random.set_seed(0)
@@ -206,19 +211,19 @@ def run_not_local():
     lstm = LSTM_train_test(output_size=settings.NUMBER_OF_ACTIVITIES)
     lstm.compile()
 
-    for current_days in range(3, 70):
+    for current_days in range(3, 43):
         print(f"Current Day: {current_days}")
         np.random.seed(0)
         tf.random.set_seed(0)
 
-        if current_days in LIST_OF_DAYS_OF_UPDATES:
+        if current_days in LIST_OF_DAYS_OF_UPDATES_NEW_DATA:
             data_keys = current_days
 
         selected_clients = []
         num_days = {}
 
-        for i in AVAILABLE_CLIENTS[data_keys]:
-            num_d = current_days - CLIENT_START_DAY[i] + 1
+        for i in AVAILABLE_CLIENTS_NEW_DATA[data_keys]:
+            num_d = current_days - CLIENT_START_DAY_NEW_DATA[i] + 1
             if num_d > 0:
                 selected_clients.append(i)
                 num_days[i] = num_d
@@ -254,7 +259,7 @@ def run_not_local():
             num_epochs=500
         )
 
-        for client_id in range(first_test_home, 137):
+        for client_id in range(first_test_home, num_clients + 1):
             data_test, labels_test = create_local_test_dataset(client_id)
             print("Evaluation on client " + str(client_id))
             loss, cat_accuracy = lstm.evaluate(data_test, labels_test)
@@ -274,16 +279,16 @@ def run_not_local():
         #                       step=it)
         #     train_summary_writer.flush()
 
-    os.makedirs('./results/not_local_30_homes_results_with_new_data/', exist_ok=True)
-    np.savetxt("./results/not_local_30_homes_results_with_new_data/eva_losses.txt", losses, delimiter=',')
-    np.savetxt("./results/not_local_30_homes_results_with_new_data/eva_accuracies.txt", accuracies, delimiter=',')
-    np.savetxt("./results/not_local_30_homes_results_with_new_data/eva_my_accuracies.txt", my_accuracies, delimiter=',')
+    os.makedirs('./results/not_local_6_homes_results_lre3_weighted_00/', exist_ok=True)
+    np.savetxt("./results/not_local_6_homes_results_lre3_weighted_00/eva_losses.txt", losses, delimiter=',')
+    np.savetxt("./results/not_local_6_homes_results_lre3_weighted_00/eva_accuracies.txt", accuracies, delimiter=',')
+    np.savetxt("./results/not_local_6_homes_results_lre3_weighted_00/eva_my_accuracies.txt", my_accuracies, delimiter=',')
 
     return lstm
 
 
 def run_confusion_matrix(lstm):
-    for client_id in range(122, 131):
+    for client_id in range(1, 7):
         data_test, labels_test = create_local_test_dataset(client_id)
         predicted = lstm.predict(data_test)
         confusion_matrix = get_confusion_matrix(predicted, labels_test)
@@ -301,4 +306,7 @@ def run_confusion_matrix(lstm):
 if __name__ == '__main__':
     # lstm = run_not_local()
     lstm = run_local_only()
-    # run_confusion_matrix(lstm)
+    # lstm = LSTM_train_test(output_size=settings.NUMBER_OF_ACTIVITIES)
+    # lstm.compile()
+    # lstm.load_weights('/home/sharare/PycharmProjects/FederatedLearning_Caching/saved_model_fl_new_data_lre4/42')
+    run_confusion_matrix(lstm)
