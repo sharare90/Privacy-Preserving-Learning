@@ -262,9 +262,9 @@ losses = []
 accuracies = []
 my_accuracies = []
 data_keys = 2
-os.makedirs('./results/fl_90_homes_results/', exist_ok=True)
+os.makedirs('./results/fl_90_homes_results_2/', exist_ok=True)
 with train_summary_writer.as_default():
-    for current_days in range(77, 90):
+    for current_days in range(5, 70):
         if current_days in LIST_OF_DAYS_OF_UPDATES:
             data_keys = current_days
         build_meta_fed_train_dataset(current_days, data_keys)
@@ -287,14 +287,14 @@ with train_summary_writer.as_default():
         accuracies.append(client_accuracies)
         my_accuracies.append(window_accuracies)
 
-        model.save_weights('/home/sharare/PycharmProjects/FederatedLearning_Caching/saved_model/' + f'{current_days}')
+        model.save_weights('/home/sharare/PycharmProjects/FederatedLearning_Caching/saved_model_2/' + f'{current_days}')
         current_day_results = np.stack([client_accuracies, window_accuracies, client_losses], axis=0)
-        np.savetxt(f"./results/fl_90_homes_results/results_day_{current_days}.txt",
+        np.savetxt(f"./results/fl_90_homes_results_2/results_day_{current_days}.txt",
                    current_day_results,
                    delimiter=',')
 
-np.savetxt("./results/fl_90_homes_results/eva_losses.txt", losses, delimiter=',')
-np.savetxt("./results/fl_90_homes_results/eva_accuracies.txt", accuracies, delimiter=',')
-np.savetxt("./results/fl_90_homes_results/window_accuracies.txt", my_accuracies, delimiter=',')
+np.savetxt("./results/fl_90_homes_results_2/eva_losses.txt", losses, delimiter=',')
+np.savetxt("./results/fl_90_homes_results_2/eva_accuracies.txt", accuracies, delimiter=',')
+np.savetxt("./results/fl_90_homes_results_2/window_accuracies.txt", my_accuracies, delimiter=',')
 
 keras_evaluate(state, NUM_ROUNDS + 1)

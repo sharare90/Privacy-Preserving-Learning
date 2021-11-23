@@ -1,6 +1,6 @@
 MAPPED = True
-USE_TIME = True
-USE_DAY = True
+USE_TIME = False
+USE_DAY = False
 NUMBER_OF_DAYS = 7
 NUMBER_OF_HOURS = 24
 
@@ -17,7 +17,7 @@ if USE_TIME:
 
 
 NUM_ROUNDS = 20
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 HISTORY_SIZE = 24
 BUFFER_SIZE = 1000
 SEQ_LENGTH = 50
@@ -48,6 +48,10 @@ LIST_OF_MAPPED_2_ACTIVITIES = ['PERSONAL_HEALTH_AND_HYGIENE', 'RELAX', 'LEAVE_HO
                                'WORK', 'REST',
                                'CHORES', 'EAT', 'SOCIAL', 'DRINK'
                                ]
+
+LOSS_WEIGHTS_ADLS = [0.7, 0.8, 0.4, 1.0, 0.4, 1.0, 0.2, 0.7, 0.7, 1.0]
+# LOSS_WEIGHTS_ADLS = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
 
 MAP_OF_ACTIVITIES = {
     'Step_Out': 'NOT_TRACKED',
@@ -105,6 +109,23 @@ MAP_OF_ACTIVITIES = {
     'PERSONAL_HYGIENE': 'PERSONAL_HEALTH_AND_HYGIENE'
 }
 
+MAP_OF_ACTIVITIES_ADLS = {
+    'PersonalGrooming': 'PERSONAL_HEALTH_AND_HYGIENE',
+    'DeskWork': 'WORK',
+    'Socializing': 'SOCIAL',
+    'Eating/Drinking': 'EAT',
+    'Housework': 'CHORES',
+    'Mealpreparation': 'CHORES',
+    'Relaxing': 'RELAX',
+    'Sport': 'PERSONAL_HEALTH_AND_HYGIENE',
+    'Shopping': 'LEAVE_HOME',
+    'Movement': 'LEAVE_HOME',
+    'Transportation': 'LEAVE_HOME',
+    'Sleeping': 'REST',
+    'TakeMedication': 'PERSONAL_HEALTH_AND_HYGIENE',
+    'Functionalmobility': 'PERSONAL_HEALTH_AND_HYGIENE'
+}
+
 ACT2IDX = {u: i for i, u in enumerate(LIST_OF_ACTIVITIES)}
 
 MAPPED_ACT2IDX = {u: i for i, u in enumerate(LIST_OF_MAPPED_ACTIVITIES)}
@@ -112,6 +133,16 @@ MAPPED_ACT2IDX = {u: i for i, u in enumerate(LIST_OF_MAPPED_ACTIVITIES)}
 MAPPED_2_ACT2IDX = {u: i for i, u in enumerate(LIST_OF_MAPPED_2_ACTIVITIES)}
 
 SAMPLING = False
+
+AVAILABLE_CLIENTS_NEW_DATA = {2: [2, 3],
+                              3: [1, 2, 3],
+                              6: [1, 2, 3, 6],
+                              10: [1, 2, 3, 4, 6],
+                              12: [1, 2, 3, 4, 5, 6],
+}
+
+# AVAILABLE_CLIENTS_NEW_DATA = {1: [1, 2, 3, 4, 5, 6],
+# }
 
 AVAILABLE_CLIENTS = {2: [103],
                      5: [103, 129],
@@ -153,6 +184,26 @@ AVAILABLE_CLIENTS = {2: [103],
 
 LIST_OF_DAYS_OF_UPDATES = [2, 5, 6, 7, 9, 12, 13, 14, 15, 16, 19, 22, 23, 24, 26, 27, 34, 37, 42, 45, 46, 47, 48, 56,
                            61, 62]
+
+LIST_OF_DAYS_OF_UPDATES_NEW_DATA = [2, 3, 6, 10, 12]
+# LIST_OF_DAYS_OF_UPDATES_NEW_DATA = [1]
+CLIENT_START_DAY_NEW_DATA = {
+    2: 2,
+    3: 2,
+    1: 3,
+    6: 6,
+    4: 10,
+    5: 12,
+}
+
+# CLIENT_START_DAY_NEW_DATA = {
+#     1: 1,
+#     2: 1,
+#     3: 1,
+#     4: 1,
+#     5: 1,
+#     6: 1,
+# }
 
 CLIENT_START_DAY = {
     103: 2,

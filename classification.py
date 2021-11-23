@@ -53,7 +53,7 @@ y = data_w_day[:, -1].astype(np.float32)
 models = {
     'Decision Tree': DecisionTreeClassifier(random_state=3),
     'SVM': SVC(random_state=3),
-    'Nearest Neighbors': KNeighborsClassifier(n_neighbors=2),
+    'Nearest Neighbors': KNeighborsClassifier(n_neighbors=3),
     'Random Forest': RandomForestClassifier(n_estimators=10, random_state=3)
 }
 # models = {

@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from datasets import Dataset
-from settings import NUMBER_OF_ACTIVITIES, HISTORY_SIZE, TOTAL_NUM_OF_FEATURES
+from settings import NUMBER_OF_ACTIVITIES, HISTORY_SIZE, TOTAL_NUM_OF_FEATURES, LOSS_WEIGHTS_ADLS
 
 np.random.seed(0)
 tf.random.set_seed(0)
@@ -10,7 +10,7 @@ tf.random.set_seed(0)
 class LSTM_train_test(object):
     def __init__(self, output_size):
         # TODO bring these hyperparameters to to __init__ arguments
-        self.rnn_units = 256
+        self.rnn_units = 16
         self.learning_rate = 1e-3
 
         self.output_size = output_size
@@ -45,11 +45,15 @@ class LSTM_train_test(object):
         earlystopping_call_back = tf.keras.callbacks.EarlyStopping(
             monitor='val_categorical_accuracy',
             min_delta=0.01,
-            patience=50,
+            patience=200,
             mode='max',
             restore_best_weights=True
         )
-
+        from sklearn.utils import class_weight
+        class_weights = class_weight.compute_class_weight('balanced',
+                                                          np.unique(np.argmax(labels_train, axis=1)),
+                                                          np.argmax(labels_train, axis=1))
+        class_weights = {k: v for k, v in zip(np.unique(np.argmax(labels_train, axis=1)), class_weights)}
         return self.model.fit(
             x=data_train,
             y=labels_train,
@@ -57,7 +61,9 @@ class LSTM_train_test(object):
             batch_size=batch_size,
             validation_split=0.2,
             callbacks=[earlystopping_call_back],
-            verbose=1
+            verbose=1,
+            # class_weight=LOSS_WEIGHTS_ADLS
+            class_weight=class_weights
         )
 
     def evaluate(self, data_test, labels_test):
@@ -65,3 +71,9 @@ class LSTM_train_test(object):
 
     def predict(self, data_test):
         return self.model.predict(data_test)
+
+    def load_weights(self, load_path):
+        self.model.load_weights(load_path)
+
+    def save_weights(self, save_path):
+        self.model.save_weights(save_path)
